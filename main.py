@@ -3,10 +3,14 @@ import numpy as np
 import time
 from cvzone.HandTrackingModule import HandDetector
 
+# resolution = (640, 480)
+resolution = (1280,720)
+
 cap = cv2.VideoCapture(0)
 cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*"MJPG"))
-cap.set(3, 1280)
-cap.set(4, 720)
+# cap.set(cv2.cv.CV_CAP_PROP_FPS, 60)
+cap.set(3, resolution[0])
+cap.set(4, resolution[1])
 
 prev_frame_time = 0
 new_frame_time = 0
@@ -14,7 +18,7 @@ new_frame_time = 0
 detector = HandDetector(detectionCon=0.8, maxHands=1)
 
 points = np.empty((2,0), np.int32)
-imgcanvas = np.zeros((720,1280,3), np.uint8)
+imgcanvas = np.zeros((resolution[1],resolution[0],3), np.uint8)
 xp,yp=0,0
 while True:
     sucess, img = cap.read()
@@ -29,10 +33,10 @@ while True:
   
     fps = int(fps)
   
-    fps = str(fps)
-    print("FPS: ", fps)
+    fps = "FPS: "+str(fps)
+    # print("FPS: ", fps)
     # putting the FPS count on the frame
-    # cv2.putText(fps, (7, 70), font, 3, (100, 255, 0), 3, cv2.LINE_AA)
+    cv2.putText(img, fps, (7, 70), font, 1, (100, 255, 0), 3, cv2.LINE_AA)
 
     if hands:
         lmlist = hands[0]["lmList"]
@@ -72,8 +76,3 @@ while True:
     cv2.imshow("Video", img)
     cv2.imshow("Canvas", imgInv)
     cv2.waitKey(1)
-
-    if (cv2.waitKey(30) == 27):
-       break
-cap.release()
-cv2.destroyAllWindows()
