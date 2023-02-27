@@ -1,10 +1,15 @@
 import cv2
 import numpy as np
+import time
 from cvzone.HandTrackingModule import HandDetector
 
 cap = cv2.VideoCapture(0)
+cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*"MJPG"))
 cap.set(3, 1280)
 cap.set(4, 720)
+
+prev_frame_time = 0
+new_frame_time = 0
 
 detector = HandDetector(detectionCon=0.8, maxHands=1)
 
@@ -15,6 +20,19 @@ while True:
     sucess, img = cap.read()
     img = cv2.flip(img, 1)
     hands, img = detector.findHands(img, flipType=False)
+
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    new_frame_time = time.time()
+
+    fps = 1/(new_frame_time-prev_frame_time)
+    prev_frame_time = new_frame_time
+  
+    fps = int(fps)
+  
+    fps = str(fps)
+    print("FPS: ", fps)
+    # putting the FPS count on the frame
+    # cv2.putText(fps, (7, 70), font, 3, (100, 255, 0), 3, cv2.LINE_AA)
 
     if hands:
         lmlist = hands[0]["lmList"]
@@ -47,9 +65,15 @@ while True:
     _, imgInv = cv2.threshold(imgGray, 20, 255, cv2.THRESH_BINARY_INV)
     imgInv = cv2.cvtColor(imgInv, cv2.COLOR_GRAY2BGR)
     img = cv2.bitwise_and(img, imgInv)
+    img = cv2.bitwise_or(img, imgcanvas)
 
     # img = cv2.addWeighted(img, 0.5, imgcanvas, 0.5, 0)
 
     cv2.imshow("Video", img)
     cv2.imshow("Canvas", imgInv)
     cv2.waitKey(1)
+
+    if (cv2.waitKey(30) == 27):
+       break
+cap.release()
+cv2.destroyAllWindows()
